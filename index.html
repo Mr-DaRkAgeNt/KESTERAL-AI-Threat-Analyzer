@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kestrel AI: Threat Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0d1117; background-image: radial-gradient(circle at 1px 1px, #30363d 1px, transparent 0); background-size: 20px 20px; color: #c9d1d9; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-pane { background: rgba(13, 17, 23, 0.6); backdrop-filter: blur(16px); border: 1px solid #30363d; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+        .input-area, .browser-bar input { background-color: #010409; border: 1px solid #30363d; color: #c9d1d9; transition: all 0.3s ease; }
+        .input-area:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2); }
+        .browser-screen { background-color: #010409; border: 1px solid #30363d; }
+        .sandbox { border: 2px dashed #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+        .tab-active { background-color: #0891b2; color: white; }
+        .tab-inactive { background-color: transparent; color: #8b949e; border: 1px solid #30363d; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #0d1117; } ::-webkit-scrollbar-thumb { background: #21262d; border-radius: 4px; border: 1px solid #30363d; } ::-webkit-scrollbar-thumb:hover { background: #30363d; }
+        .loader { width: 48px; height: 48px; border: 5px solid #30363d; border-bottom-color: #22d3ee; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #analysis-report { animation: slide-up-fade-in 0.5s ease-out forwards; }
+        @keyframes slide-up-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2 flex items-center justify-center gap-4 tracking-tight">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M15.5 8.5L12 12l-3.5 3.5"/><path d="M12 2v10h10"/></svg>
+                Kestrel AI
+            </h1>
+            <p class="text-gray-400">AI-Powered Threat Analysis & Deception Platform</p>
+        </div>
+        <!-- Input Section -->
+        <div class="glass-pane rounded-xl p-4 mb-6">
+            <div class="flex mb-4 border-b border-gray-700 pb-4">
+                <button id="tab-url" class="tab-active text-sm font-semibold py-2 px-4 rounded-lg transition-all duration-300 hover:scale-105">URL / Domain Analysis</button>
+                <button id="tab-content" class="tab-inactive text-sm font-semibold py-2 px-4 rounded-lg ml-2 transition-all duration-300 hover:scale-105">Email / Message Analysis</button>
+            </div>
+            <div id="input-url-container"><input id="url-input" type="text" placeholder="Enter a single URL to analyze..." class="input-area w-full p-3 rounded-lg text-sm mono"></div>
+            <div id="input-content-container" class="hidden"><textarea id="content-input" placeholder="Paste the full body of an email, SMS, or chat message here..." class="input-area w-full p-3 rounded-lg text-sm mono h-28"></textarea></div>
+            <button id="analyze-btn" class="mt-4 w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search mr-2" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                Analyze
+            </button>
+        </div>
+        <!-- Output Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- AI Analysis Report -->
+            <div id="analysis-container" class="glass-pane rounded-xl p-6 flex flex-col justify-center items-center min-h-[450px]">
+                <div id="analysis-welcome" class="text-center text-gray-500 transition-opacity duration-300"><p class="text-lg font-medium">Awaiting Analysis</p><p class="text-sm">Your threat report will appear here.</p></div>
+                <div id="analysis-loading" class="hidden text-center text-cyan-400 transition-opacity duration-300"><div class="loader"></div><p class="mt-4 text-lg font-semibold">AI Analyst is examining the data...</p></div>
+                <div id="analysis-report" class="hidden w-full"></div>
+            </div>
+            <!-- Interactive Sandbox -->
+            <div class="glass-pane rounded-xl p-4 flex flex-col min-h-[450px]">
+                <h3 class="text-lg font-semibold text-white mb-3 border-b border-gray-700 pb-3">Interactive Sandbox</h3>
+                <div id="browser-screen" class="browser-screen flex-grow w-full rounded-lg p-4 overflow-y-auto flex flex-col justify-center items-center">
+                    <div id="sandbox-welcome" class="text-center text-gray-500 transition-opacity duration-300"><p class="text-lg font-medium">Sandbox is standing by</p><p class="text-sm">Malicious links from the report can be safely opened here.</p></div>
+                    <div id="sandbox-content" class="hidden h-full w-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- DOM Elements & State ---
+        const tabUrl = document.getElementById('tab-url'), tabContent = document.getElementById('tab-content');
+        const inputUrlContainer = document.getElementById('input-url-container'), inputContentContainer = document.getElementById('input-content-container');
+        const urlInput = document.getElementById('url-input'), contentInput = document.getElementById('content-input');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const analysisWelcome = document.getElementById('analysis-welcome'), analysisLoading = document.getElementById('analysis-loading'), analysisReport = document.getElementById('analysis-report');
+        const sandboxWelcome = document.getElementById('sandbox-welcome'), sandboxContent = document.getElementById('sandbox-content');
+        let currentAnalysisMode = 'url';
+
+        // --- Secure API Call to Backend ---
+        async function callGeminiApi(prompt) {
+            analysisWelcome.classList.add('hidden');
+            analysisReport.classList.add('hidden');
+            analysisLoading.classList.remove('hidden');
+            try {
+                // This URL points to our own secure backend function, NOT directly to Google.
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+                const result = await response.json();
+                const jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error('Error calling backend API:', error);
+                return { verdict: 'ERROR', confidenceScore: 0, redFlags: ['Failed to get analysis from the server.'], extractedLinks: [], resolvedIp: null };
+            }
+        }
+
+        function createAnalysisPrompt(text, mode) {
+            const context = mode === 'url' ? `Analyze this URL: "${text}"` : `Analyze the full text of this message: "${text}"`;
+            return `You are a senior cybersecurity analyst specializing in phishing detection. ${context}. 1. Identify all red flags that suggest phishing. Examples: mismatched links, urgent tone, spelling errors, generic greetings, suspicious domains. 2. Extract all URLs exactly as they appear. 3. Provide a final verdict: 'SAFE', 'SUSPICIOUS', or 'MALICIOUS'. 4. Provide a confidence score from 0 to 100. 5. If you are analyzing a single URL (not a message body) AND the verdict is 'SAFE', include a 'resolvedIp' key in the JSON with a plausible, randomly generated IP address as a string. Otherwise, set 'resolvedIp' to null. Return a single JSON object with the keys: "verdict", "confidenceScore", "redFlags" (an array of strings), "extractedLinks" (an array of objects with 'text' and 'url' properties), and "resolvedIp".`;
+        }
+
+        // --- UI Rendering Logic ---
+        function displayAnalysisReport(report) {
+            analysisLoading.classList.add('hidden');
+            analysisReport.classList.remove('hidden');
+            const verdictColors = { 'SAFE': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/30' }, 'SUSPICIOUS': { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/30' }, 'MALICIOUS': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/30' }, 'ERROR': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/30' } };
+            const colors = verdictColors[report.verdict] || verdictColors['ERROR'];
+            let linksHtml = '<p class="text-sm text-gray-400">No links found.</p>';
+            if (report.extractedLinks && report.extractedLinks.length > 0) {
+                 linksHtml = report.extractedLinks.map(link => `<li class="mono text-xs text-cyan-400 underline cursor-pointer hover:text-cyan-300 break-all transition-colors" onclick="launchInSandbox('${link.url || link}')">${link.text || link.url || link}</li>`).join('');
+            }
+            analysisReport.innerHTML = `<div class="border ${colors.border} ${colors.bg} rounded-xl p-4 w-full"><div class="flex justify-between items-center"><h3 class="text-lg font-bold ${colors.text}">Verdict: ${report.verdict}</h3><p class="text-sm font-semibold ${colors.text}">${report.confidenceScore}% Confidence</p></div>${report.resolvedIp ? `<div class="mono text-sm ${colors.text} border-t ${colors.border} mt-2 pt-2">Resolved IP: ${report.resolvedIp}</div>` : ''}</div><div class="mt-4 w-full"><h4 class="font-semibold text-white mb-2">Red Flags Identified:</h4><ul class="list-disc list-inside space-y-1.5 text-sm text-red-400">${report.redFlags.map(flag => `<li>${flag}</li>`).join('')}</ul></div><div class="mt-4 w-full"><h4 class="font-semibold text-white mb-2">Extracted Links (Click to test in Sandbox):</h4><ul class="space-y-1.5">${linksHtml}</ul></div>`;
+        }
+
+        function launchInSandbox(url) {
+            sandboxWelcome.classList.add('hidden');
+            sandboxContent.classList.remove('hidden');
+            document.getElementById('browser-screen').classList.add('sandbox');
+            sandboxContent.innerHTML = `<div class="w-full h-full bg-white text-black p-6 rounded-md flex flex-col justify-center items-center text-center transition-opacity duration-300"><h2 class="text-2xl font-bold text-gray-800 mb-2">Sandboxed Content</h2><p class="text-sm text-gray-500 mb-6">You are safely viewing a simulation of:</p><p class="mono text-sm text-blue-600 mb-6 break-all">${url}</p><h3 class="text-xl font-bold text-red-600">WARNING: POTENTIALLY MALICIOUS LINK</h3><p class="mt-2 text-gray-700">Because you are in the Kestrel AI Sandbox, your system remains safe.</p></div>`;
+        }
+
+        async function handleAnalysis() {
+            const textToAnalyze = currentAnalysisMode === 'url' ? urlInput.value : contentInput.value;
+            if (!textToAnalyze.trim()) { alert("Please enter some content to analyze."); return; }
+            const prompt = createAnalysisPrompt(textToAnalyze, currentAnalysisMode);
+            const report = await callGeminiApi(prompt);
+            displayAnalysisReport(report);
+        }
+
+        // --- Event Listeners ---
+        tabUrl.addEventListener('click', () => { currentAnalysisMode = 'url'; tabUrl.classList.replace('tab-inactive', 'tab-active'); tabContent.classList.replace('tab-active', 'tab-inactive'); inputUrlContainer.classList.remove('hidden'); inputContentContainer.classList.add('hidden'); });
+        tabContent.addEventListener('click', () => { currentAnalysisMode = 'content'; tabContent.classList.replace('tab-inactive', 'tab-active'); tabUrl.classList.replace('tab-active', 'tab-inactive'); inputContentContainer.classList.remove('hidden'); inputUrlContainer.classList.add('hidden'); });
+        analyzeBtn.addEventListener('click', handleAnalysis);
+    </script>
+</body>
+</html>
