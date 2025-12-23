@@ -1,106 +1,163 @@
 <div align="center">
 
-# 🦅 KESTREL AI THREAT ANALYZER
-### Advanced Threat Intelligence & Anomaly Detection System
+  <br />
 
-[![Deployment Status](https://img.shields.io/badge/Deployment-Live-success?style=for-the-badge&logo=vercel)](https://kestrel-ai-threat-analyzer.vercel.app/)
-[![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=for-the-badge)](https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer/releases)
+  
+  <h1 align="center">🦅 KESTERAL AI Threat Analyzer</h1>
 
-<a href="https://kestrel-ai-threat-analyzer.vercel.app/">
-  <img src="https://img.shields.io/badge/View_Live_Demo-000000?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Live Demo" height="35" />
-</a>
+  <p align="center">
+    <strong>Next-Gen AI Powered Threat Analysis & Deception Platform</strong>
+    <br />
+    <br />
+    <a href="https://kestrel-ai-threat-analyzer.vercel.app"><strong>🔴 View Live Demo</strong></a>
+    ·
+    <a href="https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer/pulls">Request Feature</a>
+  </p>
+</div>
 
-<br/><br/>
-
-> *"Security is not a product, but a process. In the digital age, we do not hide from the storm; we become the storm."*
+<div align="center">
+  
+![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![License](https://img.shields.io/github/license/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer?style=for-the-badge&color=blue)
+![Repo Size](https://img.shields.io/github/repo-size/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer?style=for-the-badge&color=green)
 
 </div>
 
+<br />
+
+<details>
+  <summary><strong>🔍 Table of Contents</strong></summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#key-features">Key Features</a></li>
+    <li><a href="#tech-stack">Tech Stack</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ol>
+</details>
+
 ---
 
-## 🚀 Overview
+## 🛡️ About The Project
 
-**Kestrel AI Threat Analyzer** is a next-generation cybersecurity platform designed to identify, analyze, and neutralize digital threats in real-time. By leveraging advanced machine learning algorithms, Kestrel provides deep visibility into network anomalies, offering predictive insights that stay one step ahead of cyber adversaries.
+**KESTERAL AI** is a cutting-edge web platform designed to assist security researchers and SOC analysts in identifying potential threats through advanced visualization and AI-driven heuristics. 
 
-## ✨ Key Features
+Unlike traditional static analyzers, KESTERAL integrates a **Deception Platform** methodology, allowing you to study threat behavior in a controlled, interactive environment. Whether you are analyzing network logs or simulating attack vectors, KESTERAL provides the clarity needed to make informed defense decisions.
 
-* **🔍 AI-Driven Detection**: Cognitive engines that detect zero-day anomalies.
-* **📊 Interactive Dashboard**: A live, responsive interface hosted on Vercel.
-* **⚡ Real-Time Reporting**: Instant analysis of threat vectors and log data.
-* **🛡️ Proactive Defense**: Predictive heuristics to anticipate attack patterns.
+### ⚡ Why KESTERAL?
+* **Instant Analysis:** Rapidly process threat data directly from the web interface.
+* **Deception Tech:** Utilize bait mechanisms to study attacker interaction.
+* **Zero-Setup:** Fully deployed on Vercel for immediate access, or self-hostable via Node.js.
 
 ---
 
-## 📦 Installation & Setup
+## 🚀 Key Features
 
-Follow these steps to set up the **Kestrel AI Threat Analyzer** locally.
+| Feature | Description |
+| :--- | :--- |
+| 🤖 **AI-Assisted Analysis** | Uses heuristic algorithms to flag anomalies in provided datasets. |
+| 🕸️ **Deception Modules** | Simulates vulnerable endpoints to trap and analyze malicious intent. |
+| 📊 **Visual Dashboard** | Interactive charts and graphs for network traffic and threat levels. |
+| ⚡ **Real-time API** | Built-in API endpoints for fetching latest threat intelligence. |
+| ☁️ **Cloud Native** | Optimized for serverless deployment on Vercel. |
+
+---
+
+## 💻 Tech Stack
+
+This project is built using modern web technologies to ensure speed, scalability, and ease of use.
+
+* **Frontend:** HTML5, CSS3, JavaScript (ES6+)
+* **Runtime:** Node.js
+* **Deployment:** [Vercel](https://vercel.com/)
+* **Package Manager:** NPM / Yarn
+
+---
+
+## 🏁 Getting Started
+
+To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
-* Node.js (v16.x+)
-* npm or yarn
-* Git
 
-### Step-by-Step Guide
+* **Node.js** (v14 or higher recommended)
+* **npm**
 
-**1. Clone the Repository**
-```bash
-git clone [https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer.git](https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer.git)
-```
-2. Navigate to the Directory
-Bash
-cd KESTERAL-AI-Threat-Analyzer
-```
-4. Install Dependencies
-Bash
-npm install
-# OR if you are using yarn:
-yarn install
-```
-4. Set Up Environment Variables Create a .env file in the root directory and configure your keys.
-```Bash
-cp .env.example .env
-```
-6. Run the Development Server
-```Bash
-npm run dev
-The application should now be running at http://localhost:3000.
-```
-6. Build for Production
-```Bash
-npm run build
-npm start
-```
+### Installation
 
-📖 Documentation
-For detailed information on API endpoints, architecture, and advanced configuration, please refer to our full documentation:
+1.  **Clone the Repo**
+    ```bash
+    git clone [https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer.git](https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer.git)
+    cd KESTERAL-AI-Threat-Analyzer
+    ```
 
-📘 User Guide
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-🛠️ Architecture Overview
+3.  **Start the Local Server**
+    ```bash
+    npm start
+    # OR
+    node index.js
+    ```
 
-🤝 Contributing---
-We thrive on community collaboration! If you have ideas to make Kestrel sharper:
+4.  **Access the Dashboard**
+    Open your browser and navigate to `http://localhost:3000` (or the port specified in your console).
 
-Fork the project.
+---
 
-Create your Feature Branch (git checkout -b feature/AmazingFeature).
+## 🛣️ Roadmap
 
-Commit your changes (git commit -m 'Add some AmazingFeature').
+- [x] **Phase 1:** Core UI & Basic Deception Modules (Released)
+- [ ] **Phase 2:** Integration with VirusTotal API
+- [ ] **Phase 3:** Dark Mode & Mobile Responsiveness
+- [ ] **Phase 4:** Docker Container Support
+- [ ] **Phase 5:** Multi-Language Localization
 
-Push to the branch (git push origin feature/AmazingFeature).
+See the [open issues](https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer/issues) for a full list of proposed features.
 
-Open a Pull Request.
+---
 
-📜 License----
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 🤝 Contributing
 
-📞 Author
-<div align="center">
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-Mr-DaRkAgeNt
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
 
-Built with passion for a safer digital world.
+---
 
-</div>
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer&type=Date)](https://star-history.com/#Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer&Date)
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+---
+
+## 📞 Contact
+
+**Mr-DaRkAgeNt** - [GitHub Profile](https://github.com/Mr-DaRkAgeNt)
+
+Project Link: [https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer](https://github.com/Mr-DaRkAgeNt/KESTERAL-AI-Threat-Analyzer)
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:00f2ea,100:000000&height=120&section=footer" width="100%"/>
+</p>
