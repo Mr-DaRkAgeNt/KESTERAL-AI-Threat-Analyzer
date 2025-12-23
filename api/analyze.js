@@ -1,50 +1,64 @@
 export default async function handler(req, res) {
+  // 1. Enable CORS for the frontend
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Only POST requests allowed' });
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
   try {
     const { prompt } = req.body;
-    if (!prompt) {
-      return res.status(400).json({ message: 'Prompt is required' });
-    }
-
     const apiKey = process.env.GEMINI_API_KEY;
+
     if (!apiKey) {
-        return res.status(500).json({ message: 'API key not configured on the server' });
+      console.error("ERROR: GEMINI_API_KEY environment variable is missing.");
+      return res.status(500).json({ message: "Server Configuration Error: API Key missing." });
     }
 
-    // UPDATED: Changed model name to 'gemini-1.5-flash' for stability
-    // The previous '05-20' version is likely deprecated/removed.
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Using the stable v1 API and the standard Gemini 1.5 Flash model
+    const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { 
-        responseMimeType: 'application/json',
-        temperature: 0.7 
-      },
-    };
-
-    const googleResponse = await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          // We ask for JSON format here
+          responseMimeType: "application/json"
+        }
+      })
     });
 
-    if (!googleResponse.ok) {
-      const errorText = await googleResponse.text();
-      console.error('Google API Error:', errorText);
-      // If the error is a 404, it means the model name is definitely wrong or outdated
-      throw new Error(`Google API failed with status: ${googleResponse.status}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Google API Error Response:", JSON.stringify(data));
+      return res.status(response.status).json({
+        message: data.error?.message || "The AI service is currently unavailable.",
+        error: data.error
+      });
     }
 
-    const data = await googleResponse.json();
-    res.status(200).json(data);
+    // Success: return the data to the frontend
+    return res.status(200).json(data);
 
   } catch (error) {
-    console.error('Error in serverless function:', error);
-    res.status(500).json({ message: 'An internal server error occurred. Check Vercel logs for details.' });
+    console.error("CRITICAL SERVER ERROR:", error.message);
+    return res.status(500).json({ 
+      message: "Internal Server Error: " + error.message 
+    });
   }
 }
 
