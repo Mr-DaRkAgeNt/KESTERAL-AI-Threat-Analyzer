@@ -7,126 +7,84 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #0ea5e9; --alert: #ef4444; --warn: #f59e0b; --success: #10b981; --bg-dark: #050505; }
+        :root { --primary: #0ea5e9; --bg-dark: #050505; }
         body { background-color: var(--bg-dark); color: #cbd5e1; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Tactical Background Grid */
+        /* Tactical Background */
         .tactical-grid {
             position: fixed; inset: 0; z-index: -1;
-            background-image: 
-                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+            background-image: linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
             background-size: 60px 60px;
         }
-        .tactical-grid::after {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(circle at 50% 50%, transparent 20%, #050505 90%);
-        }
-
-        /* CRT Scanline Effect */
-        .crt-overlay {
-            position: fixed; inset: 0; pointer-events: none; z-index: 50;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* Engineered Panel - Cut Corners */
-        .hud-panel {
-            background: #0a0a0a;
-            border: 1px solid #1e293b;
-            position: relative;
-            clip-path: polygon(
-                0 0, 
-                100% 0, 
-                100% calc(100% - 20px), 
-                calc(100% - 20px) 100%, 
-                0 100%
-            );
-        }
         
-        /* Decorative Corner Markers */
+        /* Engineered Panel */
+        .hud-panel {
+            background: #0a0a0a; border: 1px solid #1e293b; position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+        }
         .hud-panel::before {
             content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 10px;
             border-top: 2px solid var(--primary); border-left: 2px solid var(--primary);
         }
         .hud-panel::after {
             content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 2px;
-            background: var(--primary);
-            transform: rotate(-45deg); transform-origin: bottom right;
+            background: var(--primary); transform: rotate(-45deg); transform-origin: bottom right;
         }
 
-        /* Scanning Animation */
-        .scan-sweep {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            background: linear-gradient(to bottom, transparent 0%, rgba(14, 165, 233, 0.1) 50%, transparent 100%);
-            transform: translateY(-100%);
-            animation: sweep 2s linear infinite;
+        /* Tab Styling */
+        .tab-btn {
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+            transition: all 0.3s ease;
         }
-        @keyframes sweep { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+        .tab-active { background: #0ea5e9; color: black; font-weight: bold; border: none; }
+        .tab-inactive { background: #0f172a; color: #64748b; border: 1px solid #1e293b; }
+        .tab-inactive:hover { background: #1e293b; color: #94a3b8; }
 
-        /* Blink Animation */
         .blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-6 relative">
 
     <div class="tactical-grid"></div>
-    <div class="crt-overlay"></div>
 
-    <!-- Decorative HUD Elements -->
-    <div class="fixed top-6 left-6 text-xs mono text-slate-600">
-        <div>SYS.ID: KST-09</div>
-        <div>LAT: <span id="lat">34.05</span></div>
-    </div>
-    <div class="fixed top-6 right-6 text-xs mono text-slate-600 text-right">
-        <div>NET: SECURE</div>
-        <div class="text-emerald-500">CONN: ONLINE</div>
-    </div>
-
-    <!-- Main Container -->
+    <!-- Header -->
     <main class="w-full max-w-3xl relative z-10">
-        
-        <!-- Header -->
         <div class="flex items-end gap-4 mb-8 border-b border-slate-800 pb-4">
-            <h1 class="text-6xl font-bold tracking-tighter text-white leading-none">
-                KESTREL
-            </h1>
+            <h1 class="text-6xl font-bold tracking-tighter text-white leading-none">KESTREL</h1>
             <div class="mb-1">
-                <div class="text-xs bg-sky-600 text-black font-bold px-2 py-0.5 mono inline-block mb-1">MK.IV</div>
-                <div class="text-sm text-sky-500 tracking-widest font-bold">NEURAL THREAT ANALYZER</div>
+                <div class="text-xs bg-sky-600 text-black font-bold px-2 py-0.5 mono inline-block mb-1">MK.V</div>
+                <div class="text-sm text-sky-500 tracking-widest font-bold">TACTICAL HUD</div>
             </div>
+        </div>
+
+        <!-- TAB SELECTION -->
+        <div class="flex gap-2 mb-0 px-2">
+            <button id="tab-url" class="tab-btn tab-active w-32 py-1 text-sm mono tracking-widest">[ URL_SCAN ]</button>
+            <button id="tab-msg" class="tab-btn tab-inactive w-40 py-1 text-sm mono tracking-widest">[ MESSAGE_TXT ]</button>
         </div>
 
         <!-- Input Scanner Module -->
         <div class="hud-panel p-1 group">
-            <div id="scan-beam" class="scan-sweep hidden"></div>
-            
-            <div class="bg-[#0f1014] p-6 relative z-10 h-full border-l-4 border-slate-700 transition-colors duration-300 focus-within:border-sky-500">
+            <div class="bg-[#0f1014] p-6 relative z-10 h-full border-l-4 border-sky-600/30">
                 <div class="flex justify-between text-[10px] mono text-slate-500 mb-2 tracking-widest">
-                    <span>// INPUT_STREAM</span>
+                    <span id="input-label">// TARGET_URL_INPUT</span>
                     <span>READY</span>
                 </div>
                 
                 <textarea id="user-input" rows="3" 
-                    placeholder="PASTE TARGET DATA HERE (URL, IP, TEXT)..." 
+                    placeholder="ENTER TARGET URL (e.g., http://sus-login.com)..." 
                     class="w-full bg-transparent border-none text-sky-100 placeholder-slate-700 text-lg focus:ring-0 resize-none mono leading-relaxed"
                 ></textarea>
                 
                 <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-800/50">
                     <div class="text-xs text-slate-600 mono flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 bg-slate-600 rounded-full"></span>
-                        WAITING FOR COMMAND
+                        <span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-pulse"></span>
+                        HEURISTIC ENGINE ACTIVE
                     </div>
-                    <button id="analyze-btn" class="bg-white hover:bg-sky-400 text-black hover:text-black px-6 py-2 font-bold mono text-sm tracking-wider transition-all clip-button">
+                    <button id="analyze-btn" class="bg-white hover:bg-sky-400 text-black hover:text-black px-6 py-2 font-bold mono text-sm tracking-wider transition-all">
                         [ INITIATE_SCAN ]
                     </button>
                 </div>
@@ -135,65 +93,40 @@
 
         <!-- Results Dashboard -->
         <div id="results-panel" class="mt-6 hidden">
-            
             <div class="grid md:grid-cols-[2fr_1fr] gap-4">
-                
                 <!-- Main Report -->
                 <div class="hud-panel p-6 bg-[#0f1014] border-l-4 border-slate-700" id="status-bar">
-                    <div class="text-[10px] mono text-slate-500 mb-4 tracking-widest flex justify-between">
-                        <span>// ANALYSIS_RESULT</span>
-                        <span id="timestamp">T-00:00:00</span>
-                    </div>
-
                     <div class="flex items-center gap-4 mb-6">
-                        <div id="verdict-box" class="w-16 h-16 bg-slate-800 flex items-center justify-center font-bold text-2xl text-slate-500 border border-slate-600">
-                            ?
-                        </div>
+                        <div id="verdict-box" class="w-16 h-16 bg-slate-800 flex items-center justify-center font-bold text-2xl text-slate-500 border border-slate-600">?</div>
                         <div>
-                            <div class="text-xs text-slate-500 uppercase font-bold">Verdict Evaluation</div>
+                            <div class="text-xs text-slate-500 uppercase font-bold">Threat Assessment</div>
                             <div id="verdict-text" class="text-3xl font-bold text-white tracking-tight">ANALYZING...</div>
                         </div>
                     </div>
-
                     <div class="border-t border-slate-800 pt-4">
                          <div class="text-xs text-sky-600 mono mb-2 uppercase">> Execution Summary</div>
-                         <p id="summary-text" class="text-slate-300 text-sm leading-relaxed mb-4">Processing data stream...</p>
-                         
-                         <div class="text-xs text-sky-600 mono mb-2 uppercase">> Detected Indicators</div>
-                         <ul id="details-list" class="space-y-1 text-xs mono text-slate-400 h-24 overflow-y-auto">
-                             <!-- Dynamic Items -->
-                         </ul>
+                         <p id="summary-text" class="text-slate-300 text-sm leading-relaxed mb-4">Processing...</p>
+                         <div class="text-xs text-sky-600 mono mb-2 uppercase">> Indicators</div>
+                         <ul id="details-list" class="space-y-1 text-xs mono text-slate-400 h-24 overflow-y-auto"></ul>
                     </div>
                 </div>
 
                 <!-- Metrics Panel -->
                 <div class="hud-panel p-6 bg-[#0f1014] flex flex-col justify-between">
-                    <div>
-                        <div class="text-[10px] mono text-slate-500 mb-2 tracking-widest">// RISK_METER</div>
-                        <div class="relative w-full aspect-square flex items-center justify-center border border-slate-800 rounded-full bg-slate-900/50">
-                            <svg class="w-full h-full transform -rotate-90 p-2">
-                                <circle cx="50%" cy="50%" r="45%" fill="none" stroke="#1e293b" stroke-width="4"></circle>
-                                <circle id="meter-ring" cx="50%" cy="50%" r="45%" fill="none" stroke="#0ea5e9" stroke-width="4"
-                                    stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="butt" class="transition-all duration-1000"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span id="risk-score" class="text-4xl font-bold text-white">0</span>
-                                <span class="text-[9px] mono text-slate-500">THREAT IDX</span>
-                            </div>
+                    <div class="text-[10px] mono text-slate-500 mb-2 tracking-widest">// RISK_METER</div>
+                    <div class="relative w-full aspect-square flex items-center justify-center border border-slate-800 rounded-full bg-slate-900/50">
+                        <svg class="w-full h-full transform -rotate-90 p-2">
+                            <circle cx="50%" cy="50%" r="45%" fill="none" stroke="#1e293b" stroke-width="4"></circle>
+                            <circle id="meter-ring" cx="50%" cy="50%" r="45%" fill="none" stroke="#0ea5e9" stroke-width="4"
+                                stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="butt" class="transition-all duration-1000"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="risk-score" class="text-4xl font-bold text-white">0</span>
+                            <span class="text-[9px] mono text-slate-500">THREAT IDX</span>
                         </div>
                     </div>
-                    
-                    <div class="mt-4 pt-4 border-t border-slate-800 text-center">
-                         <div class="text-[10px] mono text-slate-600 mb-1">ENGINE CONFIDENCE</div>
-                         <div class="w-full bg-slate-800 h-1 mt-1">
-                             <div class="bg-sky-600 h-1 w-[98%]"></div>
-                         </div>
-                         <div class="text-right text-[9px] text-sky-500 mt-1">98.4%</div>
-                    </div>
                 </div>
-
             </div>
-
         </div>
 
     </main>
@@ -201,111 +134,86 @@
     <script>
         const analyzeBtn = document.getElementById('analyze-btn');
         const userInput = document.getElementById('user-input');
-        const scanBeam = document.getElementById('scan-beam');
         const resultsPanel = document.getElementById('results-panel');
-        
-        // Output Elements
-        const verdictText = document.getElementById('verdict-text');
-        const verdictBox = document.getElementById('verdict-box');
-        const statusBar = document.getElementById('status-bar');
-        const summaryText = document.getElementById('summary-text');
-        const detailsList = document.getElementById('details-list');
-        const riskScoreEl = document.getElementById('risk-score');
-        const meterRing = document.getElementById('meter-ring');
-        const timestamp = document.getElementById('timestamp');
+        const tabUrl = document.getElementById('tab-url');
+        const tabMsg = document.getElementById('tab-msg');
+        const inputLabel = document.getElementById('input-label');
+        let currentMode = 'url';
 
-        // Decorative ticker
-        setInterval(() => {
-            document.getElementById('lat').innerText = (Math.random() * 90).toFixed(4);
-        }, 2000);
+        // Tab Logic
+        tabUrl.addEventListener('click', () => {
+            currentMode = 'url';
+            tabUrl.className = 'tab-btn tab-active w-32 py-1 text-sm mono tracking-widest';
+            tabMsg.className = 'tab-btn tab-inactive w-40 py-1 text-sm mono tracking-widest';
+            userInput.placeholder = "ENTER TARGET URL (e.g., http://sus-login.com)...";
+            inputLabel.innerText = "// TARGET_URL_INPUT";
+            resultsPanel.classList.add('hidden');
+        });
+
+        tabMsg.addEventListener('click', () => {
+            currentMode = 'message';
+            tabMsg.className = 'tab-btn tab-active w-40 py-1 text-sm mono tracking-widest';
+            tabUrl.className = 'tab-btn tab-inactive w-32 py-1 text-sm mono tracking-widest';
+            userInput.placeholder = "PASTE EMAIL OR SMS CONTENT HERE...";
+            inputLabel.innerText = "// MESSAGE_BODY_INPUT";
+            resultsPanel.classList.add('hidden');
+        });
 
         analyzeBtn.addEventListener('click', async () => {
             const text = userInput.value.trim();
             if (!text) return;
 
-            // 1. Reset & Show Loading
+            // UI Loading
             resultsPanel.classList.add('hidden');
-            scanBeam.classList.remove('hidden');
             analyzeBtn.disabled = true;
             analyzeBtn.innerHTML = "<span class='blink'>PROCESSING...</span>";
             userInput.disabled = true;
 
             try {
-                // DETECT PREVIEW ENVIRONMENT
-                const isPreview = window.location.protocol === 'file:' || window.location.protocol === 'blob:' || window.location.hostname.includes('googleusercontent');
+                // Detect Preview Mode
+                const isPreview = window.location.protocol === 'file:' || window.location.protocol === 'blob:';
                 
                 let data;
-
                 if (isPreview) {
-                    console.log("Local Heuristic Engine Engaged.");
-                    await new Promise(r => setTimeout(r, 800)); // Fast tactical delay
-                    data = runLocalHeuristic(text);
+                    await new Promise(r => setTimeout(r, 800));
+                    // Simple local mock for preview
+                    data = { verdict: "SAFE", risk_score: 5, summary: "Preview Mode: Backend required for full scan.", details: ["Local heuristic check passed."] };
+                    if(text.includes('http')) data.verdict = "SUSPICIOUS"; 
                 } else {
                     const response = await fetch('/api/analyze', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: text })
+                        body: JSON.stringify({ prompt: text, type: currentMode })
                     });
                     data = await response.json();
                 }
                 
-                // 3. Render Results
                 displayResults(data);
 
             } catch (error) {
                 console.error(error);
-                alert("ERR_CONN_REFUSED: Check Network Uplink.");
+                alert("Scan failed. Check connection.");
             } finally {
-                // 4. Cleanup
-                scanBeam.classList.add('hidden');
                 analyzeBtn.disabled = false;
                 analyzeBtn.innerHTML = "[ INITIATE_SCAN ]";
                 userInput.disabled = false;
             }
         });
 
-        // Local Heuristic Logic 
-        function runLocalHeuristic(text) {
-            text = text.toLowerCase();
-            let score = 0;
-            let details = [];
-            let isUrl = text.includes('http') || text.includes('www.') || text.includes('.com') || text.includes('.net');
-
-            const suspicionKeywords = ['verify', 'suspended', 'urgent', 'account locked', 'password', 'credential', 'login', 'confirm identity', 'bank', 'wallet', 'unlock', 'expires', 'immediately', 'action required'];
-
-            suspicionKeywords.forEach(word => {
-                if (text.includes(word)) { score += 10; details.push(`KEYWORD_MATCH: "${word}"`); }
-            });
-
-            if (isUrl) {
-                if (text.includes('http:') && !text.includes('https:')) { score += 25; details.push("PROTOCOL_UNSECURE (HTTP)"); }
-                const ipPattern = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/;
-                if (ipPattern.test(text)) { score += 40; details.push("HOST_TYPE: RAW_IP"); }
-                if (text.includes('@')) { score += 30; details.push("OBFUSCATION_DETECTED (@)"); }
-                const susTLDs = ['.xyz', '.top', '.gq', '.tk', '.ml', '.cf', '.cc'];
-                susTLDs.forEach(tld => { if (text.includes(tld)) { score += 15; details.push(`SUSPICIOUS_TLD: ${tld}`); } });
-                if (text.length > 70) { score += 10; details.push("ANOMALY: URL_LENGTH_EXCEEDED"); }
-            } else {
-                if (text.length < 20) details.push("WARN: INPUT_SHORT_LENGTH");
-                if (text.includes('click link') || text.includes('open attachment')) { score += 20; details.push("ACTION_REQ: EXTERNAL_ASSET"); }
-            }
-
-            let verdict = "SAFE";
-            let summary = "Input parameters within nominal safety ranges.";
-            if (score > 100) score = 100;
-            if (score >= 70) { verdict = "MALICIOUS"; summary = "CRITICAL THREAT. High-risk indicators confirmed."; }
-            else if (score >= 30) { verdict = "SUSPICIOUS"; summary = "CAUTION ADVISED. Several heuristic flags raised."; }
-            if (details.length === 0) details.push("Heuristic scan clear.");
-
-            return { verdict, risk_score: score, summary, details };
-        }
-
         function displayResults(data) {
             resultsPanel.classList.remove('hidden');
-            timestamp.innerText = "T-" + new Date().toLocaleTimeString();
+            
+            // Elements
+            const verdictText = document.getElementById('verdict-text');
+            const verdictBox = document.getElementById('verdict-box');
+            const statusBar = document.getElementById('status-bar');
+            const meterRing = document.getElementById('meter-ring');
 
-            // Verdict Styling
             verdictText.innerText = data.verdict;
+            document.getElementById('summary-text').innerText = data.summary;
+            document.getElementById('risk-score').innerText = data.risk_score;
+            document.getElementById('details-list').innerHTML = data.details.map(d => `<li class="flex items-start"><span class="mr-2 text-slate-600">>></span> ${d}</li>`).join('');
+
             statusBar.className = "hud-panel p-6 bg-[#0f1014] border-l-4 transition-colors duration-500";
             
             if (data.verdict === 'MALICIOUS') {
@@ -328,21 +236,9 @@
                 meterRing.style.stroke = "#059669";
             }
 
-            // Update Text
-            summaryText.innerText = data.summary;
-            riskScoreEl.innerText = data.risk_score;
-
-            // Update List
-            detailsList.innerHTML = data.details.map(d => 
-                `<li class="flex items-start"><span class="mr-2 text-slate-600">>></span> ${d}</li>`
-            ).join('');
-
-            // Animate Circle (Radius 45% -> approx 283 circumference)
             const circumference = 283;
             const offset = circumference - (data.risk_score / 100) * circumference;
-            setTimeout(() => {
-                meterRing.style.strokeDashoffset = offset;
-            }, 50);
+            setTimeout(() => { meterRing.style.strokeDashoffset = offset; }, 50);
         }
     </script>
 </body>
