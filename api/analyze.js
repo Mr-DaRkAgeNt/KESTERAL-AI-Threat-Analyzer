@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: "Server Configuration Error: API Key missing." });
     }
 
-    // Using the stable v1 API and the standard Gemini 1.5 Flash model
+    // Using the stable v1 API
     const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(API_URL, {
@@ -33,11 +33,9 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents: [{
           parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          // Changed to snake_case as required by the v1 REST API
-          response_mime_type: "application/json"
-        }
+        }]
+        // We removed generationConfig entirely to prevent payload errors.
+        // The prompt already asks for JSON, so Gemini will provide it.
       })
     });
 
@@ -61,3 +59,4 @@ export default async function handler(req, res) {
     });
   }
 }
+
