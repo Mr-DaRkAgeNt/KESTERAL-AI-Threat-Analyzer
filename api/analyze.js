@@ -24,9 +24,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: "Server Error: GEMINI_API_KEY is missing in Vercel." });
     }
 
-    // MODERN STANDARD (2025): Using Gemini 1.5 Flash via v1beta
-    // This is the fastest, most cost-effective model for real-time applications.
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // MODERN STANDARD (2025): Using Gemini 1.5 Flash via v1 (STABLE)
+    // We switched from v1beta to v1 because v1beta was returning "Model not found".
+    const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     // Minimal Payload: We remove all complex configs to ensure maximum compatibility.
     const requestBody = {
