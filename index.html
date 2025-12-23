@@ -81,20 +81,39 @@
             analysisWelcome.classList.add('hidden');
             analysisReport.classList.add('hidden');
             analysisLoading.classList.remove('hidden');
+
+            // Handle local file preview detection
+            if (window.location.protocol === 'file:' || window.location.protocol === 'blob:') {
+                return { verdict: 'ERROR', confidenceScore: 0, redFlags: ['API calls are disabled in local previews. Please use your deployed Vercel URL.'], extractedLinks: [], resolvedIp: null };
+            }
+
             try {
-                // This URL points to our own secure backend function, NOT directly to Google.
+                // This URL points to our own secure backend function on Vercel
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: prompt })
                 });
-                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+
                 const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Server Error: ${response.status}`);
+                }
+
+                // Clean the response: models sometimes wrap JSON in markdown backticks
                 const jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-                return JSON.parse(jsonString);
+                const cleanedJson = jsonString.replace(/```json|```/g, '').trim();
+                return JSON.parse(cleanedJson);
             } catch (error) {
                 console.error('Error calling backend API:', error);
-                return { verdict: 'ERROR', confidenceScore: 0, redFlags: ['Failed to get analysis from the server.'], extractedLinks: [], resolvedIp: null };
+                return { 
+                    verdict: 'ERROR', 
+                    confidenceScore: 0, 
+                    redFlags: [`Internal Error: ${error.message}. Please verify your GEMINI_API_KEY in Vercel settings.`], 
+                    extractedLinks: [], 
+                    resolvedIp: null 
+                };
             }
         }
 
@@ -107,13 +126,35 @@
         function displayAnalysisReport(report) {
             analysisLoading.classList.add('hidden');
             analysisReport.classList.remove('hidden');
-            const verdictColors = { 'SAFE': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/30' }, 'SUSPICIOUS': { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/30' }, 'MALICIOUS': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/30' }, 'ERROR': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/30' } };
+            const verdictColors = { 
+                'SAFE': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/30' }, 
+                'SUSPICIOUS': { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/30' }, 
+                'MALICIOUS': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/30' }, 
+                'ERROR': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/30' } 
+            };
             const colors = verdictColors[report.verdict] || verdictColors['ERROR'];
             let linksHtml = '<p class="text-sm text-gray-400">No links found.</p>';
             if (report.extractedLinks && report.extractedLinks.length > 0) {
                  linksHtml = report.extractedLinks.map(link => `<li class="mono text-xs text-cyan-400 underline cursor-pointer hover:text-cyan-300 break-all transition-colors" onclick="launchInSandbox('${link.url || link}')">${link.text || link.url || link}</li>`).join('');
             }
-            analysisReport.innerHTML = `<div class="border ${colors.border} ${colors.bg} rounded-xl p-4 w-full"><div class="flex justify-between items-center"><h3 class="text-lg font-bold ${colors.text}">Verdict: ${report.verdict}</h3><p class="text-sm font-semibold ${colors.text}">${report.confidenceScore}% Confidence</p></div>${report.resolvedIp ? `<div class="mono text-sm ${colors.text} border-t ${colors.border} mt-2 pt-2">Resolved IP: ${report.resolvedIp}</div>` : ''}</div><div class="mt-4 w-full"><h4 class="font-semibold text-white mb-2">Red Flags Identified:</h4><ul class="list-disc list-inside space-y-1.5 text-sm text-red-400">${report.redFlags.map(flag => `<li>${flag}</li>`).join('')}</ul></div><div class="mt-4 w-full"><h4 class="font-semibold text-white mb-2">Extracted Links (Click to test in Sandbox):</h4><ul class="space-y-1.5">${linksHtml}</ul></div>`;
+            analysisReport.innerHTML = `
+                <div class="border ${colors.border} ${colors.bg} rounded-xl p-4 w-full">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold ${colors.text}">Verdict: ${report.verdict}</h3>
+                        <p class="text-sm font-semibold ${colors.text}">${report.confidenceScore}% Confidence</p>
+                    </div>
+                    ${report.resolvedIp ? `<div class="mono text-sm ${colors.text} border-t ${colors.border} mt-2 pt-2">Resolved IP: ${report.resolvedIp}</div>` : ''}
+                </div>
+                <div class="mt-4 w-full">
+                    <h4 class="font-semibold text-white mb-2">Red Flags Identified:</h4>
+                    <ul class="list-disc list-inside space-y-1.5 text-sm text-red-400">
+                        ${report.redFlags.map(flag => `<li>${flag}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="mt-4 w-full">
+                    <h4 class="font-semibold text-white mb-2">Extracted Links (Click to test in Sandbox):</h4>
+                    <ul class="space-y-1.5">${linksHtml}</ul>
+                </div>`;
         }
 
         function launchInSandbox(url) {
