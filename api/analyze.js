@@ -22,8 +22,12 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: "Server Configuration Error: API Key missing." });
     }
 
-    // Using the stable v1 API
-    const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    /**
+     * UPDATED LOGIC:
+     * We are using 'v1beta' with 'gemini-1.5-flash-latest'.
+     * This alias is more robust for different regions and API key types.
+     */
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -34,8 +38,7 @@ export default async function handler(req, res) {
         contents: [{
           parts: [{ text: prompt }]
         }]
-        // We removed generationConfig entirely to prevent payload errors.
-        // The prompt already asks for JSON, so Gemini will provide it.
+        // No generationConfig here to avoid 'Unknown name' payload errors
       })
     });
 
@@ -44,7 +47,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error("Google API Error Response:", JSON.stringify(data));
       return res.status(response.status).json({
-        message: data.error?.message || "The AI service is currently unavailable.",
+        message: data.error?.message || "The AI model is not responding. Please check your API key and region.",
         error: data.error
       });
     }
