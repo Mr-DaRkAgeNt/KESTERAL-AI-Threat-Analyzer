@@ -15,61 +15,61 @@ export default async function handler(req, res) {
 
   try {
     const { prompt } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
+    
+    // SANITIZATION: Trim whitespace from the key to prevent copy-paste errors
+    const apiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : "";
 
     if (!apiKey) {
       console.error("ERROR: GEMINI_API_KEY environment variable is missing.");
       return res.status(500).json({ message: "Server Configuration Error: API Key missing." });
     }
 
-    // PRIMARY STRATEGY: Gemini 1.5 Flash (Fastest, Newest)
-    // We use v1beta as it is the most permissive endpoint right now.
-    const urlFlash = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
-    // BACKUP STRATEGY: Gemini Pro (Older, Extremely Stable)
-    const urlPro = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    // STRATEGIES: Try different endpoints/models in sequence
+    // This covers regional availability and API version differences
+    const strategies = [
+      { name: "v1beta Flash", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}` },
+      { name: "v1 Stable Flash", url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}` },
+      { name: "v1beta Pro (Legacy)", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}` }
+    ];
 
-    // Helper function to try a fetch
-    async function tryModel(url, modelName) {
-      console.log(`Attempting connection to ${modelName}...`);
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-          // REMOVED generationConfig to prevent 'Invalid JSON Payload' errors
-        })
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error?.message || `Error ${response.status}`);
-      }
-      return data;
-    }
+    let lastErrorDetails = null;
 
-    let finalData = null;
-
-    try {
-      // Try Flash first
-      finalData = await tryModel(urlFlash, 'Gemini 1.5 Flash');
-    } catch (flashError) {
-      console.warn("Flash failed, switching to backup...", flashError.message);
+    for (const strategy of strategies) {
       try {
-        // If Flash fails, Try Pro
-        finalData = await tryModel(urlPro, 'Gemini Pro (Backup)');
-      } catch (proError) {
-        // If both fail, it's definitely an API Key/Account issue
-        console.error("All models failed.");
-        return res.status(500).json({ 
-          message: "Google API Error: Check your API Key permissions.",
-          detail: proError.message
+        console.log(`Attempting strategy: ${strategy.name}`);
+        
+        const response = await fetch(strategy.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+            // No generationConfig to avoid payload errors
+          })
         });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log(`Success with ${strategy.name}`);
+          return res.status(200).json(data);
+        } else {
+          console.warn(`Strategy ${strategy.name} failed:`, data);
+          lastErrorDetails = data; // Store the error to show user if all fail
+        }
+      } catch (err) {
+        console.error(`Network error with ${strategy.name}:`, err);
+        lastErrorDetails = { message: err.message };
       }
     }
 
-    // Success
-    return res.status(200).json(finalData);
+    // If we get here, ALL strategies failed.
+    console.error("All strategies failed.");
+    
+    // Return the RAW error from Google so we can debug the API Key issue
+    return res.status(500).json({ 
+      message: "Google API Authentication Failed. Please check your API Key.",
+      debug: lastErrorDetails 
+    });
 
   } catch (error) {
     console.error("CRITICAL SERVER ERROR:", error.message);
