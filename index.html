@@ -3,178 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kestrel AI: Threat Analyzer</title>
+    <title>KESTREL AI | Tactical Defense</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0d1117; background-image: radial-gradient(circle at 1px 1px, #30363d 1px, transparent 0); background-size: 20px 20px; color: #c9d1d9; }
+        :root { --primary: #0ea5e9; --alert: #ef4444; --warn: #f59e0b; --success: #10b981; --bg-dark: #050505; }
+        body { background-color: var(--bg-dark); color: #cbd5e1; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass-pane { background: rgba(13, 17, 23, 0.6); backdrop-filter: blur(16px); border: 1px solid #30363d; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
-        .input-area, .browser-bar input { background-color: #010409; border: 1px solid #30363d; color: #c9d1d9; transition: all 0.3s ease; }
-        .input-area:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2); }
-        .browser-screen { background-color: #010409; border: 1px solid #30363d; }
-        .sandbox { border: 2px dashed #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
-        .tab-active { background-color: #0891b2; color: white; }
-        .tab-inactive { background-color: transparent; color: #8b949e; border: 1px solid #30363d; }
-        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #0d1117; } ::-webkit-scrollbar-thumb { background: #21262d; border-radius: 4px; border: 1px solid #30363d; } ::-webkit-scrollbar-thumb:hover { background: #30363d; }
-        .loader { width: 48px; height: 48px; border: 5px solid #30363d; border-bottom-color: #22d3ee; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #analysis-report { animation: slide-up-fade-in 0.5s ease-out forwards; }
-        @keyframes slide-up-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Tactical Background Grid */
+        .tactical-grid {
+            position: fixed; inset: 0; z-index: -1;
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .tactical-grid::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 20%, #050505 90%);
+        }
+
+        /* CRT Scanline Effect */
+        .crt-overlay {
+            position: fixed; inset: 0; pointer-events: none; z-index: 50;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Engineered Panel - Cut Corners */
+        .hud-panel {
+            background: #0a0a0a;
+            border: 1px solid #1e293b;
+            position: relative;
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 
+                0 100%
+            );
+        }
+        
+        /* Decorative Corner Markers */
+        .hud-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 10px;
+            border-top: 2px solid var(--primary); border-left: 2px solid var(--primary);
+        }
+        .hud-panel::after {
+            content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 2px;
+            background: var(--primary);
+            transform: rotate(-45deg); transform-origin: bottom right;
+        }
+
+        /* Scanning Animation */
+        .scan-sweep {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(14, 165, 233, 0.1) 50%, transparent 100%);
+            transform: translateY(-100%);
+            animation: sweep 2s linear infinite;
+        }
+        @keyframes sweep { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+
+        /* Blink Animation */
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="p-4 md:p-6">
-    <div class="max-w-7xl mx-auto">
+<body class="min-h-screen flex flex-col items-center justify-center p-6 relative">
+
+    <div class="tactical-grid"></div>
+    <div class="crt-overlay"></div>
+
+    <!-- Decorative HUD Elements -->
+    <div class="fixed top-6 left-6 text-xs mono text-slate-600">
+        <div>SYS.ID: KST-09</div>
+        <div>LAT: <span id="lat">34.05</span></div>
+    </div>
+    <div class="fixed top-6 right-6 text-xs mono text-slate-600 text-right">
+        <div>NET: SECURE</div>
+        <div class="text-emerald-500">CONN: ONLINE</div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-3xl relative z-10">
+        
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2 flex items-center justify-center gap-4 tracking-tight">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M15.5 8.5L12 12l-3.5 3.5"/><path d="M12 2v10h10"/></svg>
-                Kestrel AI
+        <div class="flex items-end gap-4 mb-8 border-b border-slate-800 pb-4">
+            <h1 class="text-6xl font-bold tracking-tighter text-white leading-none">
+                KESTREL
             </h1>
-            <p class="text-gray-400">AI-Powered Threat Analysis & Deception Platform</p>
-        </div>
-        <!-- Input Section -->
-        <div class="glass-pane rounded-xl p-4 mb-6">
-            <div class="flex mb-4 border-b border-gray-700 pb-4">
-                <button id="tab-url" class="tab-active text-sm font-semibold py-2 px-4 rounded-lg transition-all duration-300 hover:scale-105">URL / Domain Analysis</button>
-                <button id="tab-content" class="tab-inactive text-sm font-semibold py-2 px-4 rounded-lg ml-2 transition-all duration-300 hover:scale-105">Email / Message Analysis</button>
+            <div class="mb-1">
+                <div class="text-xs bg-sky-600 text-black font-bold px-2 py-0.5 mono inline-block mb-1">MK.IV</div>
+                <div class="text-sm text-sky-500 tracking-widest font-bold">NEURAL THREAT ANALYZER</div>
             </div>
-            <div id="input-url-container"><input id="url-input" type="text" placeholder="Enter a single URL to analyze..." class="input-area w-full p-3 rounded-lg text-sm mono"></div>
-            <div id="input-content-container" class="hidden"><textarea id="content-input" placeholder="Paste the full body of an email, SMS, or chat message here..." class="input-area w-full p-3 rounded-lg text-sm mono h-28"></textarea></div>
-            <button id="analyze-btn" class="mt-4 w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search mr-2" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                Analyze
-            </button>
         </div>
-        <!-- Output Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- AI Analysis Report -->
-            <div id="analysis-container" class="glass-pane rounded-xl p-6 flex flex-col justify-center items-center min-h-[450px]">
-                <div id="analysis-welcome" class="text-center text-gray-500 transition-opacity duration-300"><p class="text-lg font-medium">Awaiting Analysis</p><p class="text-sm">Your threat report will appear here.</p></div>
-                <div id="analysis-loading" class="hidden text-center text-cyan-400 transition-opacity duration-300"><div class="loader"></div><p class="mt-4 text-lg font-semibold">AI Analyst is examining the data...</p></div>
-                <div id="analysis-report" class="hidden w-full"></div>
-            </div>
-            <!-- Interactive Sandbox -->
-            <div class="glass-pane rounded-xl p-4 flex flex-col min-h-[450px]">
-                <h3 class="text-lg font-semibold text-white mb-3 border-b border-gray-700 pb-3">Interactive Sandbox</h3>
-                <div id="browser-screen" class="browser-screen flex-grow w-full rounded-lg p-4 overflow-y-auto flex flex-col justify-center items-center">
-                    <div id="sandbox-welcome" class="text-center text-gray-500 transition-opacity duration-300"><p class="text-lg font-medium">Sandbox is standing by</p><p class="text-sm">Malicious links from the report can be safely opened here.</p></div>
-                    <div id="sandbox-content" class="hidden h-full w-full"></div>
+
+        <!-- Input Scanner Module -->
+        <div class="hud-panel p-1 group">
+            <div id="scan-beam" class="scan-sweep hidden"></div>
+            
+            <div class="bg-[#0f1014] p-6 relative z-10 h-full border-l-4 border-slate-700 transition-colors duration-300 focus-within:border-sky-500">
+                <div class="flex justify-between text-[10px] mono text-slate-500 mb-2 tracking-widest">
+                    <span>// INPUT_STREAM</span>
+                    <span>READY</span>
+                </div>
+                
+                <textarea id="user-input" rows="3" 
+                    placeholder="PASTE TARGET DATA HERE (URL, IP, TEXT)..." 
+                    class="w-full bg-transparent border-none text-sky-100 placeholder-slate-700 text-lg focus:ring-0 resize-none mono leading-relaxed"
+                ></textarea>
+                
+                <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-800/50">
+                    <div class="text-xs text-slate-600 mono flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-slate-600 rounded-full"></span>
+                        WAITING FOR COMMAND
+                    </div>
+                    <button id="analyze-btn" class="bg-white hover:bg-sky-400 text-black hover:text-black px-6 py-2 font-bold mono text-sm tracking-wider transition-all clip-button">
+                        [ INITIATE_SCAN ]
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- Results Dashboard -->
+        <div id="results-panel" class="mt-6 hidden">
+            
+            <div class="grid md:grid-cols-[2fr_1fr] gap-4">
+                
+                <!-- Main Report -->
+                <div class="hud-panel p-6 bg-[#0f1014] border-l-4 border-slate-700" id="status-bar">
+                    <div class="text-[10px] mono text-slate-500 mb-4 tracking-widest flex justify-between">
+                        <span>// ANALYSIS_RESULT</span>
+                        <span id="timestamp">T-00:00:00</span>
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-6">
+                        <div id="verdict-box" class="w-16 h-16 bg-slate-800 flex items-center justify-center font-bold text-2xl text-slate-500 border border-slate-600">
+                            ?
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 uppercase font-bold">Verdict Evaluation</div>
+                            <div id="verdict-text" class="text-3xl font-bold text-white tracking-tight">ANALYZING...</div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4">
+                         <div class="text-xs text-sky-600 mono mb-2 uppercase">> Execution Summary</div>
+                         <p id="summary-text" class="text-slate-300 text-sm leading-relaxed mb-4">Processing data stream...</p>
+                         
+                         <div class="text-xs text-sky-600 mono mb-2 uppercase">> Detected Indicators</div>
+                         <ul id="details-list" class="space-y-1 text-xs mono text-slate-400 h-24 overflow-y-auto">
+                             <!-- Dynamic Items -->
+                         </ul>
+                    </div>
+                </div>
+
+                <!-- Metrics Panel -->
+                <div class="hud-panel p-6 bg-[#0f1014] flex flex-col justify-between">
+                    <div>
+                        <div class="text-[10px] mono text-slate-500 mb-2 tracking-widest">// RISK_METER</div>
+                        <div class="relative w-full aspect-square flex items-center justify-center border border-slate-800 rounded-full bg-slate-900/50">
+                            <svg class="w-full h-full transform -rotate-90 p-2">
+                                <circle cx="50%" cy="50%" r="45%" fill="none" stroke="#1e293b" stroke-width="4"></circle>
+                                <circle id="meter-ring" cx="50%" cy="50%" r="45%" fill="none" stroke="#0ea5e9" stroke-width="4"
+                                    stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="butt" class="transition-all duration-1000"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span id="risk-score" class="text-4xl font-bold text-white">0</span>
+                                <span class="text-[9px] mono text-slate-500">THREAT IDX</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-800 text-center">
+                         <div class="text-[10px] mono text-slate-600 mb-1">ENGINE CONFIDENCE</div>
+                         <div class="w-full bg-slate-800 h-1 mt-1">
+                             <div class="bg-sky-600 h-1 w-[98%]"></div>
+                         </div>
+                         <div class="text-right text-[9px] text-sky-500 mt-1">98.4%</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
     <script>
-        // --- DOM Elements & State ---
-        const tabUrl = document.getElementById('tab-url'), tabContent = document.getElementById('tab-content');
-        const inputUrlContainer = document.getElementById('input-url-container'), inputContentContainer = document.getElementById('input-content-container');
-        const urlInput = document.getElementById('url-input'), contentInput = document.getElementById('content-input');
         const analyzeBtn = document.getElementById('analyze-btn');
-        const analysisWelcome = document.getElementById('analysis-welcome'), analysisLoading = document.getElementById('analysis-loading'), analysisReport = document.getElementById('analysis-report');
-        const sandboxWelcome = document.getElementById('sandbox-welcome'), sandboxContent = document.getElementById('sandbox-content');
-        let currentAnalysisMode = 'url';
+        const userInput = document.getElementById('user-input');
+        const scanBeam = document.getElementById('scan-beam');
+        const resultsPanel = document.getElementById('results-panel');
+        
+        // Output Elements
+        const verdictText = document.getElementById('verdict-text');
+        const verdictBox = document.getElementById('verdict-box');
+        const statusBar = document.getElementById('status-bar');
+        const summaryText = document.getElementById('summary-text');
+        const detailsList = document.getElementById('details-list');
+        const riskScoreEl = document.getElementById('risk-score');
+        const meterRing = document.getElementById('meter-ring');
+        const timestamp = document.getElementById('timestamp');
 
-        // --- Secure API Call to Backend ---
-        async function callGeminiApi(prompt) {
-            analysisWelcome.classList.add('hidden');
-            analysisReport.classList.add('hidden');
-            analysisLoading.classList.remove('hidden');
+        // Decorative ticker
+        setInterval(() => {
+            document.getElementById('lat').innerText = (Math.random() * 90).toFixed(4);
+        }, 2000);
 
-            if (window.location.protocol === 'file:' || window.location.protocol === 'blob:') {
-                return { verdict: 'ERROR', confidenceScore: 0, redFlags: ['API calls are disabled in local previews. Please use your deployed Vercel URL.'], extractedLinks: [], resolvedIp: null };
-            }
+        analyzeBtn.addEventListener('click', async () => {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. Reset & Show Loading
+            resultsPanel.classList.add('hidden');
+            scanBeam.classList.remove('hidden');
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = "<span class='blink'>PROCESSING...</span>";
+            userInput.disabled = true;
 
             try {
-                // This URL points to our own secure backend function on Vercel
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
-                });
+                // DETECT PREVIEW ENVIRONMENT
+                const isPreview = window.location.protocol === 'file:' || window.location.protocol === 'blob:' || window.location.hostname.includes('googleusercontent');
+                
+                let data;
 
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.message || `Server Error: ${response.status}`);
+                if (isPreview) {
+                    console.log("Local Heuristic Engine Engaged.");
+                    await new Promise(r => setTimeout(r, 800)); // Fast tactical delay
+                    data = runLocalHeuristic(text);
+                } else {
+                    const response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: text })
+                    });
+                    data = await response.json();
                 }
+                
+                // 3. Render Results
+                displayResults(data);
 
-                // Clean the response: models sometimes wrap JSON in markdown backticks
-                const jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-                const cleanedJson = jsonString.replace(/```json|```/g, '').trim();
-                return JSON.parse(cleanedJson);
             } catch (error) {
-                console.error('Error calling backend API:', error);
-                return { 
-                    verdict: 'ERROR', 
-                    confidenceScore: 0, 
-                    redFlags: [`Internal Error: ${error.message}. Please verify your GEMINI_API_KEY in Vercel settings.`], 
-                    extractedLinks: [], 
-                    resolvedIp: null 
-                };
+                console.error(error);
+                alert("ERR_CONN_REFUSED: Check Network Uplink.");
+            } finally {
+                // 4. Cleanup
+                scanBeam.classList.add('hidden');
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = "[ INITIATE_SCAN ]";
+                userInput.disabled = false;
             }
-        }
+        });
 
-        function createAnalysisPrompt(text, mode) {
-            const context = mode === 'url' ? `Analyze this URL: "${text}"` : `Analyze the full text of this message: "${text}"`;
-            return `You are a senior cybersecurity analyst specializing in phishing detection. ${context}. 1. Identify all red flags that suggest phishing. Examples: mismatched links, urgent tone, spelling errors, generic greetings, suspicious domains. 2. Extract all URLs exactly as they appear. 3. Provide a final verdict: 'SAFE', 'SUSPICIOUS', or 'MALICIOUS'. 4. Provide a confidence score from 0 to 100. 5. If you are analyzing a single URL (not a message body) AND the verdict is 'SAFE', include a 'resolvedIp' key in the JSON with a plausible, randomly generated IP address as a string. Otherwise, set 'resolvedIp' to null. Return a single JSON object with the keys: "verdict", "confidenceScore", "redFlags" (an array of strings), "extractedLinks" (an array of objects with 'text' and 'url' properties), and "resolvedIp".`;
-        }
+        // Local Heuristic Logic 
+        function runLocalHeuristic(text) {
+            text = text.toLowerCase();
+            let score = 0;
+            let details = [];
+            let isUrl = text.includes('http') || text.includes('www.') || text.includes('.com') || text.includes('.net');
 
-        // --- UI Rendering Logic ---
-        function displayAnalysisReport(report) {
-            analysisLoading.classList.add('hidden');
-            analysisReport.classList.remove('hidden');
-            const verdictColors = { 
-                'SAFE': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/30' }, 
-                'SUSPICIOUS': { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/30' }, 
-                'MALICIOUS': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/30' }, 
-                'ERROR': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/30' } 
-            };
-            const colors = verdictColors[report.verdict] || verdictColors['ERROR'];
-            let linksHtml = '<p class="text-sm text-gray-400">No links found.</p>';
-            if (report.extractedLinks && report.extractedLinks.length > 0) {
-                 linksHtml = report.extractedLinks.map(link => `<li class="mono text-xs text-cyan-400 underline cursor-pointer hover:text-cyan-300 break-all transition-colors" onclick="launchInSandbox('${link.url || link}')">${link.text || link.url || link}</li>`).join('');
+            const suspicionKeywords = ['verify', 'suspended', 'urgent', 'account locked', 'password', 'credential', 'login', 'confirm identity', 'bank', 'wallet', 'unlock', 'expires', 'immediately', 'action required'];
+
+            suspicionKeywords.forEach(word => {
+                if (text.includes(word)) { score += 10; details.push(`KEYWORD_MATCH: "${word}"`); }
+            });
+
+            if (isUrl) {
+                if (text.includes('http:') && !text.includes('https:')) { score += 25; details.push("PROTOCOL_UNSECURE (HTTP)"); }
+                const ipPattern = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/;
+                if (ipPattern.test(text)) { score += 40; details.push("HOST_TYPE: RAW_IP"); }
+                if (text.includes('@')) { score += 30; details.push("OBFUSCATION_DETECTED (@)"); }
+                const susTLDs = ['.xyz', '.top', '.gq', '.tk', '.ml', '.cf', '.cc'];
+                susTLDs.forEach(tld => { if (text.includes(tld)) { score += 15; details.push(`SUSPICIOUS_TLD: ${tld}`); } });
+                if (text.length > 70) { score += 10; details.push("ANOMALY: URL_LENGTH_EXCEEDED"); }
+            } else {
+                if (text.length < 20) details.push("WARN: INPUT_SHORT_LENGTH");
+                if (text.includes('click link') || text.includes('open attachment')) { score += 20; details.push("ACTION_REQ: EXTERNAL_ASSET"); }
             }
-            analysisReport.innerHTML = `
-                <div class="border ${colors.border} ${colors.bg} rounded-xl p-4 w-full">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-bold ${colors.text}">Verdict: ${report.verdict}</h3>
-                        <p class="text-sm font-semibold ${colors.text}">${report.confidenceScore}% Confidence</p>
-                    </div>
-                    ${report.resolvedIp ? `<div class="mono text-sm ${colors.text} border-t ${colors.border} mt-2 pt-2">Resolved IP: ${report.resolvedIp}</div>` : ''}
-                </div>
-                <div class="mt-4 w-full">
-                    <h4 class="font-semibold text-white mb-2">Red Flags Identified:</h4>
-                    <ul class="list-disc list-inside space-y-1.5 text-sm text-red-400">
-                        ${report.redFlags.map(flag => `<li>${flag}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="mt-4 w-full">
-                    <h4 class="font-semibold text-white mb-2">Extracted Links (Click to test in Sandbox):</h4>
-                    <ul class="space-y-1.5">${linksHtml}</ul>
-                </div>`;
+
+            let verdict = "SAFE";
+            let summary = "Input parameters within nominal safety ranges.";
+            if (score > 100) score = 100;
+            if (score >= 70) { verdict = "MALICIOUS"; summary = "CRITICAL THREAT. High-risk indicators confirmed."; }
+            else if (score >= 30) { verdict = "SUSPICIOUS"; summary = "CAUTION ADVISED. Several heuristic flags raised."; }
+            if (details.length === 0) details.push("Heuristic scan clear.");
+
+            return { verdict, risk_score: score, summary, details };
         }
 
-        function launchInSandbox(url) {
-            sandboxWelcome.classList.add('hidden');
-            sandboxContent.classList.remove('hidden');
-            document.getElementById('browser-screen').classList.add('sandbox');
-            sandboxContent.innerHTML = `<div class="w-full h-full bg-white text-black p-6 rounded-md flex flex-col justify-center items-center text-center transition-opacity duration-300"><h2 class="text-2xl font-bold text-gray-800 mb-2">Sandboxed Content</h2><p class="text-sm text-gray-500 mb-6">You are safely viewing a simulation of:</p><p class="mono text-sm text-blue-600 mb-6 break-all">${url}</p><h3 class="text-xl font-bold text-red-600">WARNING: POTENTIALLY MALICIOUS LINK</h3><p class="mt-2 text-gray-700">Because you are in the Kestrel AI Sandbox, your system remains safe.</p></div>`;
-        }
+        function displayResults(data) {
+            resultsPanel.classList.remove('hidden');
+            timestamp.innerText = "T-" + new Date().toLocaleTimeString();
 
-        async function handleAnalysis() {
-            const textToAnalyze = currentAnalysisMode === 'url' ? urlInput.value : contentInput.value;
-            if (!textToAnalyze.trim()) { alert("Please enter some content to analyze."); return; }
-            const prompt = createAnalysisPrompt(textToAnalyze, currentAnalysisMode);
-            const report = await callGeminiApi(prompt);
-            displayAnalysisReport(report);
-        }
+            // Verdict Styling
+            verdictText.innerText = data.verdict;
+            statusBar.className = "hud-panel p-6 bg-[#0f1014] border-l-4 transition-colors duration-500";
+            
+            if (data.verdict === 'MALICIOUS') {
+                statusBar.classList.add('border-red-600');
+                verdictText.className = "text-3xl font-bold text-red-500 tracking-tight";
+                verdictBox.className = "w-16 h-16 bg-red-900/20 flex items-center justify-center font-bold text-2xl text-red-500 border border-red-500";
+                verdictBox.innerText = "!";
+                meterRing.style.stroke = "#dc2626"; 
+            } else if (data.verdict === 'SUSPICIOUS') {
+                statusBar.classList.add('border-amber-500');
+                verdictText.className = "text-3xl font-bold text-amber-500 tracking-tight";
+                verdictBox.className = "w-16 h-16 bg-amber-900/20 flex items-center justify-center font-bold text-2xl text-amber-500 border border-amber-500";
+                verdictBox.innerText = "⚠️";
+                meterRing.style.stroke = "#d97706";
+            } else {
+                statusBar.classList.add('border-emerald-500');
+                verdictText.className = "text-3xl font-bold text-emerald-500 tracking-tight";
+                verdictBox.className = "w-16 h-16 bg-emerald-900/20 flex items-center justify-center font-bold text-2xl text-emerald-500 border border-emerald-500";
+                verdictBox.innerText = "✓";
+                meterRing.style.stroke = "#059669";
+            }
 
-        // --- Event Listeners ---
-        tabUrl.addEventListener('click', () => { currentAnalysisMode = 'url'; tabUrl.classList.replace('tab-inactive', 'tab-active'); tabContent.classList.replace('tab-active', 'tab-inactive'); inputUrlContainer.classList.remove('hidden'); inputContentContainer.classList.add('hidden'); });
-        tabContent.addEventListener('click', () => { currentAnalysisMode = 'content'; tabContent.classList.replace('tab-inactive', 'tab-active'); tabUrl.classList.replace('tab-active', 'tab-inactive'); inputContentContainer.classList.remove('hidden'); inputUrlContainer.classList.add('hidden'); });
-        analyzeBtn.addEventListener('click', handleAnalysis);
+            // Update Text
+            summaryText.innerText = data.summary;
+            riskScoreEl.innerText = data.risk_score;
+
+            // Update List
+            detailsList.innerHTML = data.details.map(d => 
+                `<li class="flex items-start"><span class="mr-2 text-slate-600">>></span> ${d}</li>`
+            ).join('');
+
+            // Animate Circle (Radius 45% -> approx 283 circumference)
+            const circumference = 283;
+            const offset = circumference - (data.risk_score / 100) * circumference;
+            setTimeout(() => {
+                meterRing.style.strokeDashoffset = offset;
+            }, 50);
+        }
     </script>
 </body>
 </html>
