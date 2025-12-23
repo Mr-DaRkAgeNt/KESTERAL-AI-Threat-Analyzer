@@ -35,8 +35,8 @@ export default async function handler(req, res) {
           parts: [{ text: prompt }]
         }],
         generationConfig: {
-          // We ask for JSON format here
-          responseMimeType: "application/json"
+          // Changed to snake_case as required by the v1 REST API
+          response_mime_type: "application/json"
         }
       })
     });
@@ -61,4 +61,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
