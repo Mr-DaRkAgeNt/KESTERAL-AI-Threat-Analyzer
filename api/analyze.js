@@ -22,38 +22,55 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: "Server Configuration Error: API Key missing." });
     }
 
-    /**
-     * UPDATED LOGIC:
-     * We are using 'v1beta' with 'gemini-1.5-flash-latest'.
-     * This alias is more robust for different regions and API key types.
-     */
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+    // List of models to try in order. If one fails, we try the next.
+    // This makes the backend "Self-Healing" against 404 errors.
+    const modelsToTry = [
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-8b',
+      'gemini-pro' // Fallback to 1.0 Pro if all else fails
+    ];
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
-        // No generationConfig here to avoid 'Unknown name' payload errors
-      })
-    });
+    let lastError = null;
 
-    const data = await response.json();
+    for (const model of modelsToTry) {
+      try {
+        console.log(`Attempting to use model: ${model}`);
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    if (!response.ok) {
-      console.error("Google API Error Response:", JSON.stringify(data));
-      return res.status(response.status).json({
-        message: data.error?.message || "The AI model is not responding. Please check your API key and region.",
-        error: data.error
-      });
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: prompt }]
+            }]
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Success! Return immediately.
+          return res.status(200).json(data);
+        } else {
+          console.warn(`Model ${model} failed with ${response.status}:`, JSON.stringify(data));
+          lastError = data;
+          // Loop continues to the next model...
+        }
+      } catch (err) {
+        console.error(`Network error with ${model}:`, err);
+        lastError = { message: err.message };
+      }
     }
 
-    // Success: return the data to the frontend
-    return res.status(200).json(data);
+    // If we exit the loop, all models failed.
+    console.error("All models failed.");
+    return res.status(500).json({
+      message: "All AI models failed to respond. Please check your API Key permissions in Google AI Studio.",
+      error: lastError
+    });
 
   } catch (error) {
     console.error("CRITICAL SERVER ERROR:", error.message);
@@ -62,5 +79,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
-
