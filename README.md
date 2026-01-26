@@ -119,7 +119,7 @@ To get a local copy up and running, follow these simple steps.
 ## 🛣️ Roadmap
 
 - [x] **Phase 1:** Core UI & Basic Deception Modules (Released)
-- [ ] **Phase 2:** Integration with VirusTotal API
+- [x] **Phase 2:** Integration with VirusTotal API
 - [ ] **Phase 3:** Dark Mode & Mobile Responsiveness
 - [ ] **Phase 4:** Docker Container Support
 - [ ] **Phase 5:** Multi-Language Localization
